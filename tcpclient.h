@@ -35,6 +35,7 @@ public:
     void setPort(quint16 port);
     QHostAddress getIPAddress();
     quint16 getPort();
+    bool isConnected();
 
 signals:
     void connectSignal();

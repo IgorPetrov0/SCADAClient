@@ -7,7 +7,7 @@ tcpClient::tcpClient(QObject *parent):
     waitTimer->setSingleShot(true);
     socket = new QTcpSocket(this);
     connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(errorSlot(QAbstractSocket::SocketError)));
-
+    socket->abort();
 }
 /////////////////////////////////////////////////
 tcpClient::~tcpClient(){
@@ -99,7 +99,11 @@ bool tcpClient::mashineDown(int index){
 /////////////////////////////////////////////////////////////////
 void tcpClient::connectToServer(){
     if((!IPAddress.isNull()) && (port!=0)){
+        QAbstractSocket::SocketState state=socket->state();
         socket->connectToHost(IPAddress,port);
+        state=socket->state();
+        QString name=socket->peerName();
+        int t=0;
     }
 }
 /////////////////////////////////////////////////////////////////////////
@@ -117,6 +121,14 @@ QHostAddress tcpClient::getIPAddress(){
 //////////////////////////////////////////////////////////////////////////
 quint16 tcpClient::getPort(){
     return port;
+}
+//////////////////////////////////////////////////////////////////////////////
+bool tcpClient::isConnected(){
+    QAbstractSocket::SocketState state=socket->state();
+    if(socket->state()==QAbstractSocket::UnconnectedState){
+        return false;
+    }
+    return true;
 }
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){

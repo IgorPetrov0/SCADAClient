@@ -159,7 +159,12 @@ void MainWindow::createReport(reportType type, int index){
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::updateTimeSlot(){
-    ui->mainTab->updateContent();
+    if(netCore.isConnected()){
+        ui->mainTab->updateContent();
+    }
+//    else{
+//        netCore.connectToServer();
+//    }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::netSettingSlot(){
@@ -177,12 +182,11 @@ void MainWindow::netSettingSlot(){
 }
 ////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::netErrorSlot(){
-    updateTimer->stop();
     errorMessage(tr("Ошибка соединения с сервером: \n")+netCore.getLastError());
 }
 /////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::netConnectSlot(){
-    updateTimer->start(10000);
+
 }
 //////////////////////////////////////////////////////////////////////////////////
 void MainWindow::initialise(){
@@ -193,6 +197,7 @@ void MainWindow::initialise(){
         return;
     }
     netCore.connectToServer();
+    updateTimer->start(10000);
     //ui->mainTab->updateContent();
 }
 ///////////////////////////////////////////////////////////////////////////////////
