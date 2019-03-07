@@ -86,6 +86,7 @@ object *tcpClient::getObjectForAddress(int address, object *ob){
 }
 ////////////////////////////////////////////////////////////////////////
 int tcpClient::getMashinsCount(){
+    QDataStream str(currentCommand);
 
 }
 ///////////////////////////////////////////////////////////////////////
@@ -99,11 +100,7 @@ bool tcpClient::mashineDown(int index){
 /////////////////////////////////////////////////////////////////
 void tcpClient::connectToServer(){
     if((!IPAddress.isNull()) && (port!=0)){
-        QAbstractSocket::SocketState state=socket->state();
         socket->connectToHost(IPAddress,port);
-        state=socket->state();
-        QString name=socket->peerName();
-        int t=0;
     }
 }
 /////////////////////////////////////////////////////////////////////////
@@ -124,11 +121,22 @@ quint16 tcpClient::getPort(){
 }
 //////////////////////////////////////////////////////////////////////////////
 bool tcpClient::isConnected(){
-    QAbstractSocket::SocketState state=socket->state();
-    if(socket->state()==QAbstractSocket::UnconnectedState){
-        return false;
+    if(socket->state()==QAbstractSocket::ConnectedState){
+        return true;
     }
-    return true;
+    return false;
+}
+//////////////////////////////////////////////////////////////////////////////
+bool tcpClient::isConnecting(){
+    if(socket->state()==QAbstractSocket::ConnectingState){
+        return true;
+    }
+    return false;
+}
+///////////////////////////////////////////////////////////////////////////
+void tcpClient::sendCommand(){
+
+    currentCommand.clear();
 }
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){

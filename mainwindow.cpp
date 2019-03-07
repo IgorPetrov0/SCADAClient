@@ -20,10 +20,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&netCore,SIGNAL(errorSignal()),this,SLOT(netErrorSlot()));
     connect(&netCore,SIGNAL(connectSignal()),this,SLOT(netConnectSlot()));
     appPath=QApplication::applicationDirPath();
+
+    conIndicator = new connectionIndicator(tr("Соединение с сервером"));
+    conIndicator->setMinimumSize(30,10);
+    statusBar()->addPermanentWidget(conIndicator,0);
+    statusBar()->setSizeGripEnabled(true);
+
+    errorMessageBox=NULL;
 }
 ////////////////////////////////////////////////////////////////
 MainWindow::~MainWindow()
 { 
+    if(errorMessageBox!=NULL){
+        delete errorMessageBox;
+    }
+    delete conIndicator;
     delete ui;
 }
 /////////////////////////////////////////////////////////////////
@@ -161,10 +172,12 @@ void MainWindow::createReport(reportType type, int index){
 void MainWindow::updateTimeSlot(){
     if(netCore.isConnected()){
         ui->mainTab->updateContent();
+        conIndicator->setState(true);
     }
-//    else{
-//        netCore.connectToServer();
-//    }
+    else if(!netCore.isConnecting()){
+        netCore.connectToServer();
+        conIndicator->setState(false);
+    }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::netSettingSlot(){
@@ -198,14 +211,17 @@ void MainWindow::initialise(){
     }
     netCore.connectToServer();
     updateTimer->start(10000);
-    //ui->mainTab->updateContent();
 }
 ///////////////////////////////////////////////////////////////////////////////////
 void MainWindow::errorMessage(QString error){
-    QMessageBox box(this);
-    box.setDefaultButton(QMessageBox::Ok);
-    box.setWindowTitle(tr("Ошибка"));
-    box.setText(error);
-    box.exec();
+    if(errorMessageBox==NULL){
+        errorMessageBox = new QMessageBox(this);
+        errorMessageBox->setDefaultButton(QMessageBox::Ok);
+        errorMessageBox->setWindowTitle(tr("Ошибка"));
+        errorMessageBox->setText(error);
+        errorMessageBox->exec();
+        delete errorMessageBox;
+        errorMessageBox=NULL;
+    }
 }
 ///////////////////////////////////////////////////////////////////////////////////

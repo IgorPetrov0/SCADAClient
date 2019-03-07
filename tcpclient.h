@@ -36,16 +36,21 @@ public:
     QHostAddress getIPAddress();
     quint16 getPort();
     bool isConnected();
+    bool isConnecting();
+    void sendCommand();
 
-signals:
-    void connectSignal();
-    void errorSignal();
 
 protected:
     QTcpSocket *socket;
     QHostAddress IPAddress;
     quint16 port;
     QTimer *waitTimer;
+    QByteArray currentCommand;
+
+
+signals:
+    void connectSignal();
+    void errorSignal();
 
 protected slots:
     void connectSlot();

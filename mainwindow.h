@@ -12,6 +12,7 @@
 #include "serviceClasses/kalendardialog.h"
 #include "serviceClasses/reportdialog.h"
 #include "serviceClasses/netdialog.h"
+#include "serviceClasses/connectionindicator.h"
 
 
 namespace Ui {
@@ -29,9 +30,10 @@ public:
 
 protected:
     tcpClient netCore;
-
+    connectionIndicator *conIndicator;
     QString appPath;
     QTimer *updateTimer;
+    QMessageBox *errorMessageBox;
     void resizeEvent(QResizeEvent *event);
     void errorMessage(QString error);
 

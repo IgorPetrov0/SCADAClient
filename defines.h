@@ -17,6 +17,10 @@ enum requestType{
     REQUEST_GET_DATA
 };
 
+enum serverCommand{
+    SERVERCOMMAND_GET_MASHINS_COUNT=0
+};
+
 struct minutePoint{
     int value;
     int event;//событие

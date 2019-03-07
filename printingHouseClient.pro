@@ -52,7 +52,8 @@ SOURCES += \
     widgets/maintabwidget.cpp \
     widgets/mashinetable.cpp \
     widgets/perfomancewidget.cpp \
-    tcpclient.cpp
+    tcpclient.cpp \
+    serviceClasses/connectionindicator.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -80,7 +81,8 @@ HEADERS += \
     widgets/maintabwidget.h \
     widgets/mashinetable.h \
     widgets/perfomancewidget.h \
-    tcpclient.h
+    tcpclient.h \
+    serviceClasses/connectionindicator.h
 
 FORMS += \
         mainwindow.ui \
