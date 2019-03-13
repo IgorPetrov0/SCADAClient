@@ -170,14 +170,15 @@ void MainWindow::createReport(reportType type, int index){
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::updateTimeSlot(){
-    if(netCore.isConnected()){
-        ui->mainTab->updateContent();
+    if(netCore.isConnected()){//если соединение установлено
         conIndicator->setState(true);
     }
-    else if(!netCore.isConnecting()){
+    else if(!netCore.isConnecting()){//иначе, если соединение в данный момент не устанавливается <connectED|connecTING>
         netCore.connectToServer();
         conIndicator->setState(false);
     }
+    netCore.updateState();
+    ui->mainTab->updateContent();
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::netSettingSlot(){

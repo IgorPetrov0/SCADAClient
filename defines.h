@@ -18,7 +18,8 @@ enum requestType{
 };
 
 enum serverCommand{
-    SERVERCOMMAND_GET_MASHINS_COUNT=0
+    SERVERCOMMAND_NO_COMMAND=0,
+    SERVERCOMMAND_GET_STATISTIC
 };
 
 struct minutePoint{

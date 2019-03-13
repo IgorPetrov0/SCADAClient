@@ -7,7 +7,9 @@ tcpClient::tcpClient(QObject *parent):
     waitTimer->setSingleShot(true);
     socket = new QTcpSocket(this);
     connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(errorSlot(QAbstractSocket::SocketError)));
+    connect(socket,SIGNAL(readyRead()),this,SLOT(readyReadSlot()));
     socket->abort();
+    currentState=SERVERCOMMAND_NO_COMMAND;
 }
 /////////////////////////////////////////////////
 tcpClient::~tcpClient(){
@@ -15,7 +17,11 @@ tcpClient::~tcpClient(){
 }
 //////////////////////////////////////////////////////////
 mashine *tcpClient::getMashine(int index){
-
+    if((index>=mashinesArray.size())||(index<0)){
+        qDebug("netCore::getMashine : index out of range");
+        return NULL;
+    }
+    return mashinesArray.at(index);
 }
 ///////////////////////////////////////////////////////////
 bool tcpClient::createObject(QDataStream *str){
@@ -86,8 +92,7 @@ object *tcpClient::getObjectForAddress(int address, object *ob){
 }
 ////////////////////////////////////////////////////////////////////////
 int tcpClient::getMashinsCount(){
-    QDataStream str(currentCommand);
-
+    return mashinesArray.size();
 }
 ///////////////////////////////////////////////////////////////////////
 bool tcpClient::mashineUp(int index){
@@ -136,7 +141,19 @@ bool tcpClient::isConnecting(){
 ///////////////////////////////////////////////////////////////////////////
 void tcpClient::sendCommand(){
 
-    currentCommand.clear();
+}
+////////////////////////////////////////////////////////////////////////////
+void tcpClient::updateState(){
+    if(socket->state()==QAbstractSocket::ConnectedState){
+        currentState=SERVERCOMMAND_GET_STATISTIC;
+        QByteArray array;
+        char *data=array.data();
+        QDataStream str(&array,QIODevice::WriteOnly);
+        str<<(qint64)sizeof(qint64)+1;
+        str<<(unsigned char)currentState;
+        socket->write(array);
+        socket->flush();
+    }
 }
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){

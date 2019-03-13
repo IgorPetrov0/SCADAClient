@@ -151,8 +151,10 @@ void perfomanceWidget::objectDeleteSlot(){
 //////////////////////////////////////////////////////////////////////////////////////////////
 void perfomanceWidget::selectMashineSlot(int row, int column){
     mashine *tmpMashine=netCorePointer->getMashine(row);
-    dayGraph *graph=tmpMashine->getCurrentGraph();
-    if(graph!=NULL){
-        ui->graphicWidget->visualiseGraphFirstTab(graph);
+    if(tmpMashine!=NULL){
+        dayGraph *graph=tmpMashine->getCurrentGraph();
+        if(graph!=NULL){
+            ui->graphicWidget->visualiseGraphFirstTab(graph);
+        }
     }
 }

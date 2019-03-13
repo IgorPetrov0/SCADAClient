@@ -38,6 +38,7 @@ public:
     bool isConnected();
     bool isConnecting();
     void sendCommand();
+    void updateState();
 
 
 protected:
@@ -45,7 +46,8 @@ protected:
     QHostAddress IPAddress;
     quint16 port;
     QTimer *waitTimer;
-    QByteArray currentCommand;
+    serverCommand currentState;
+    QVector<mashine*> mashinesArray;
 
 
 signals:

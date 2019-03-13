@@ -26,12 +26,11 @@
     <enum>QAbstractItemView::SelectRows</enum>
    </property>
    <property name="rowCount">
-    <number>1</number>
+    <number>0</number>
    </property>
    <property name="columnCount">
     <number>2</number>
    </property>
-   <row/>
    <column/>
    <column/>
   </widget>
