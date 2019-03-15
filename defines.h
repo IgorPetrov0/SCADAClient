@@ -22,6 +22,12 @@ enum serverCommand{
     SERVERCOMMAND_GET_STATISTIC
 };
 
+enum tcpPacketType{
+    TCP_PACKET_COMMAND=0,
+    TCP_PACKET_STATISTIC
+};
+
+
 struct minutePoint{
     int value;
     int event;//событие

@@ -48,6 +48,8 @@ protected:
     QTimer *waitTimer;
     serverCommand currentState;
     QVector<mashine*> mashinesArray;
+    QByteArray incomingBuffer;
+    void decodeStatistic(QDataStream *str);
 
 
 signals:
@@ -59,6 +61,7 @@ protected slots:
     void disconnectSlot();
     void readyReadSlot();
     void errorSlot(QAbstractSocket::SocketError error);
+    void waitTimeSlot();
 
 
 };

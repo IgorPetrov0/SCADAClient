@@ -147,13 +147,17 @@ void tcpClient::updateState(){
     if(socket->state()==QAbstractSocket::ConnectedState){
         currentState=SERVERCOMMAND_GET_STATISTIC;
         QByteArray array;
-        char *data=array.data();
         QDataStream str(&array,QIODevice::WriteOnly);
-        str<<(qint64)sizeof(qint64)+1;
-        str<<(unsigned char)currentState;
+        str<<qint64(sizeof(qint64)+1);
+        str<<(uchar)TCP_PACKET_COMMAND;
+        str<<(uchar)currentState;
         socket->write(array);
         socket->flush();
     }
+}
+/////////////////////////////////////////////////////////////////////////////
+void tcpClient::decodeStatistic(QDataStream *str){
+
 }
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){
@@ -165,10 +169,40 @@ void tcpClient::disconnectSlot(){
 }
 ///////////////////////////////////////////////////////////////////////////
 void tcpClient::readyReadSlot(){
+    qint64 packetSize=0;
+    incomingBuffer.append(socket->readAll());
+    QDataStream str(incomingBuffer);
 
+    str>>packetSize;
+    if(packetSize==incomingBuffer.size()){
+        switch(currentState){
+            case(SERVERCOMMAND_GET_STATISTIC):{//если ждем статистику от сервера
+                uchar type;
+                str>>type;
+                if(type==TCP_PACKET_STATISTIC){
+                    decodeStatistic(&str);
+                }
+                else{
+                    setLastError(tr("Неверный формат пакета от сервера"));
+                    emit errorSignal();
+                }
+                break;
+            }
+        }
+        incomingBuffer.clear();
+    }
+    else if(packetSize<incomingBuffer.size()){
+        setLastError(tr("Неверный формат пакета от сервера"));
+        emit errorSignal();
+        incomingBuffer.clear();
+    }
 }
 //////////////////////////////////////////////////////////////////////////////
 void tcpClient::errorSlot(QAbstractSocket::SocketError error){
     setLastError(socket->errorString());
     emit errorSignal();
+}
+////////////////////////////////////////////////////////////////////////////
+void tcpClient::waitTimeSlot(){
+
 }
