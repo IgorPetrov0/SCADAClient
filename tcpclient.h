@@ -41,6 +41,7 @@ public:
     void updateState();
 
 
+
 protected:
     QTcpSocket *socket;
     QHostAddress IPAddress;

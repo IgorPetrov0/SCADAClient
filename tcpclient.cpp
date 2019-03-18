@@ -148,7 +148,7 @@ void tcpClient::updateState(){
         currentState=SERVERCOMMAND_GET_STATISTIC;
         QByteArray array;
         QDataStream str(&array,QIODevice::WriteOnly);
-        str<<qint64(sizeof(qint64)+1);
+        str<<qint64(sizeof(qint64)+2);
         str<<(uchar)TCP_PACKET_COMMAND;
         str<<(uchar)currentState;
         socket->write(array);
@@ -157,7 +157,18 @@ void tcpClient::updateState(){
 }
 /////////////////////////////////////////////////////////////////////////////
 void tcpClient::decodeStatistic(QDataStream *str){
+    int size=mashinesArray.size();
+    for(int n=0;n!=size;n++){
+        delete mashinesArray.at(n);
+        mashinesArray.clear();
+    }
 
+    *str>>size;
+    for(int n=0;n!=size;n++){
+        mashine *tmpMashine = new mashine;
+        tmpMashine->netDeserialise(str);
+        mashinesArray.append(tmpMashine);
+    }
 }
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){

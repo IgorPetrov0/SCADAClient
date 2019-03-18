@@ -51,6 +51,47 @@ void mashine::deserialisationContinue(QDataStream *str){
         shiftsArray.append(s);
     }
 }
+////////////////////////////////////////////////////////////////////////////
+void mashine::netSerialise(QDataStream *str){
+    object::serialisation(str);
+    *str<<lineColor;
+    int size=shiftsArray.size();
+    *str<<size;
+    for(int n=0;n!=size;n++){
+        *str<<shiftsArray.at(n).startTime;
+        *str<<shiftsArray.at(n).stopTime;
+    }
+    serialiseDayGraph(str);
+}
+////////////////////////////////////////////////////////////////////////////////
+void mashine::netDeserialise(QDataStream *str){
+    object::deserialisation(str);
+    *str>>lineColor;
+    int size;
+    *str>>size;
+    currentDayGraph->name=name;
+    for(int n=0;n!=size;n++){
+        shift s;
+        *str>>s.startTime;
+        *str>>s.stopTime;
+        shiftsArray.append(s);
+    }
+    *str>>currentDayGraph->name;
+    *str>>currentDayGraph->date;
+    for(int n=0;n!=1440;n++){
+        *str>>currentDayGraph->minutesArray[n].value;
+        *str>>currentDayGraph->minutesArray[n].event;
+    }
+}
+/////////////////////////////////////////////////////////////////////
+void mashine::serialiseDayGraph(QDataStream *str){
+    *str<<currentDayGraph->name;
+    *str<<currentDayGraph->date;
+    for(int n=0;n!=1440;n++){
+        *str<<currentDayGraph->minutesArray[n].value;
+        *str<<currentDayGraph->minutesArray[n].event;
+    }
+}
 ////////////////////////////////////////////////////////////////////
 mashine &mashine::operator=(const object &right){
     if (this == &right) {
