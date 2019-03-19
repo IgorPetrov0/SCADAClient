@@ -158,11 +158,12 @@ void tcpClient::updateState(){
 /////////////////////////////////////////////////////////////////////////////
 void tcpClient::decodeStatistic(QDataStream *str){
     int size=mashinesArray.size();
-    for(int n=0;n!=size;n++){
-        delete mashinesArray.at(n);
+    if(size!=0){
+        for(int n=0;n!=size;n++){
+            delete mashinesArray.at(n);
+        }
         mashinesArray.clear();
     }
-
     *str>>size;
     for(int n=0;n!=size;n++){
         mashine *tmpMashine = new mashine;

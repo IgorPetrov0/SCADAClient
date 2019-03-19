@@ -6,12 +6,15 @@ graphWidget::graphWidget(QWidget *parent) :
     ui(new Ui::graphWidget)
 {
     ui->setupUi(this);
-    this->setMouseTracking(true);
-    graphArray=NULL;
-    posY=0;
-    xFactor=2;
-    yFactor=1;
     contextMenu = createContextMenu();
+    ui->viewWidget->setScrollBarPointer(ui->horizontalScrollBar);
+    viewWidgetBottom=0;
+    bottomPos=0;
+    viewWidgetLeft=0;
+    leftPos=0;
+
+    connect(ui->viewWidget,SIGNAL(mouseMoveSignal(int,int)),this,SLOT(mouseMoveSlot(int,int)));
+    connect(ui->horizontalScrollBar,SIGNAL(valueChanged(int)),ui->viewWidget,SLOT(sliderMovedSlot(int)));
 }
 /////////////////////////////////////////////////////////////////////////////////////
 graphWidget::~graphWidget()
@@ -21,104 +24,11 @@ graphWidget::~graphWidget()
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 void graphWidget::visualiseGraph(dayGraph *array){
-    int maxValue=0;
-    maxValue=array->minutesArray[0].value;
-    for(int n=1;n!=1440;n++){
-        if(maxValue<array->minutesArray[n].value){
-            maxValue=array->minutesArray[n].value;
-        }
-    }
-    float tmp=graphZero/4*3;//три четверти от размера виджета
-    if(tmp!=0){//tmp может стать нулем, если все значения =0
-        if(tmp>maxValue){
-            yFactor=maxValue/tmp;//оставляем сверху четверть от максимального значения
-        }
-        else{
-            yFactor=tmp/maxValue;
-        }
-    }
-    else{
-        yFactor=1;
-    }
-
-    //рассчитываем xFactor так, чтобы уместить сутки на графике
-    xFactor=((float)this->width()-30)/1440;
-    graphArray=array;
+    ui->viewWidget->visualiseGraph(array);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 void graphWidget::updateContent(){
-    if(!this->hasMouseTracking()){
-        int posInArray=QTime::currentTime().msecsSinceStartOfDay()/60000;
-        calculateRails(posInArray);
-        mousePosX=posInArray*xFactor+30;
-    }
-    update();
-}
-/////////////////////////////////////////////////////////////////////////////////
-void graphWidget::paintEvent(QPaintEvent *event){
-    QPainter painter(this);
-    painter.setBrush(QBrush(Qt::white, Qt::SolidPattern));
-    QRect rect;
-    rect.setX(0);
-    rect.setY(0);
-    rect.setWidth(this->width());
-    rect.setHeight(this->height());
-    painter.drawRect(rect);
-
-    //прямоугольник окна и координатные линии
-    painter.setPen(QPen(Qt::black,2,Qt::SolidLine));
-    painter.drawRect(0,0,this->width()-1,this->height()-1);
-    painter.drawLine(30,0,30,this->height()-30);
-    painter.drawLine(30,this->height()-30,this->width(),this->height()-30);
-
-    if(graphArray!=NULL){
-        for(int n=0;n!=1440;n++){
-            minutePoint tmpPoint=graphArray->minutesArray[n];
-            int graphValue=graphZero-tmpPoint.value*yFactor;
-            //не готовые точки не отрисовываем
-            if(tmpPoint.event!=EVENT_NOT_READY){
-                if(n==0){
-                    painter.drawPoint(n*xFactor+30,graphValue);
-                }
-                else{
-                    int prevValue=graphZero-graphArray->minutesArray[n-1].value*yFactor;
-                    painter.drawLine((n-1)*xFactor+30,prevValue,n*xFactor+30,graphValue);
-                }
-            }
-        }
-        //направляющие
-        painter.setPen(QPen(Qt::black,1,Qt::SolidLine));
-        painter.drawLine(28,posY,this->width(),posY);
-        painter.drawLine(mousePosX,0,mousePosX,this->height()-28);
-
-        painter.drawText(10,posY,visibleValue);//по горизонтали
-        painter.drawText(mousePosX,this->height()-15,visibleDateTime);//по вертикали
-    }
-}
-///////////////////////////////////////////////////////////////////////////////
-void graphWidget::mouseMoveEvent(QMouseEvent *event){
-    if(event->x()<30){
-        mousePosX=30;
-    }
-    else{
-        mousePosX=event->x();
-    }
-    mousePosY=event->y();
-    if(graphArray!=NULL){
-        calculateRails((mousePosX-30)/xFactor);//позиция в массиве зависит от позиции мыши на экране);
-    }
-    update();
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-void graphWidget::wheelEvent(QWheelEvent *event){
-    QPoint angle=event->angleDelta();
-    if(angle.y()>0){
-        xFactor+=0.1f;
-    }
-    else{
-        xFactor-=0.1f;
-    }
-    updateContent();
+    ui->viewWidget->updateContent();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 void graphWidget::contextMenuEvent(QContextMenuEvent *event){
@@ -126,19 +36,44 @@ void graphWidget::contextMenuEvent(QContextMenuEvent *event){
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void graphWidget::resizeEvent(QResizeEvent *event){
-    graphZero=this->height()-40;
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-void graphWidget::mousePressEvent(QMouseEvent *event){
-    if(event->button()==Qt::LeftButton){
-        if(this->hasMouseTracking()){
-            setMouseTracking(false);
-            updateContent();
-        }
-        else{
-            setMouseTracking(true);
-        }
-    }
+    int valueLabelWidth=50;
+    int timeLabelWidth=100;
+    QRect rect;
+    rect.setX(0);
+    rect.setY(this->height()-20);
+    rect.setWidth(this->width());
+    rect.setHeight(20);
+    ui->horizontalScrollBar->setGeometry(rect);
+    //видовой виджет
+    rect.setX(valueLabelWidth+5);
+    rect.setY(0);
+    rect.setWidth(this->width()-(valueLabelWidth+5));
+    rect.setHeight(this->height()-ui->horizontalScrollBar->height()-40);
+    ui->viewWidget->setGeometry(rect);
+    //поле значения
+    rect.setX(0);
+    rect.setY(0);
+    rect.setWidth(valueLabelWidth);
+    rect.setHeight(16);
+    ui->valueLabel->setGeometry(rect);
+    //поле времени
+    rect.setX(0);
+    rect.setY(ui->viewWidget->height());
+    rect.setWidth(timeLabelWidth);
+    rect.setHeight(16);
+    ui->timeLabel->setGeometry(rect);
+    //поле события
+    rect.setX(0);
+    rect.setY(ui->viewWidget->height()+ui->timeLabel->height());
+    rect.setWidth(timeLabelWidth);
+    rect.setHeight(16);
+    ui->eventLabel->setGeometry(rect);
+
+
+    viewWidgetBottom=ui->viewWidget->geometry().y()+ui->viewWidget->geometry().height();
+    bottomPos=viewWidgetBottom-rect.height();
+    viewWidgetLeft=ui->viewWidget->width()-ui->viewWidget->geometry().y();
+    leftPos=viewWidgetLeft-ui->timeLabel->width();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 QMenu *graphWidget::createContextMenu(){
@@ -147,16 +82,47 @@ QMenu *graphWidget::createContextMenu(){
     menu->addAction(calculateAll);
     return menu;
 }
-////////////////////////////////////////////////////////////////////////
-void graphWidget::calculateRails(int posInArray){
-    visibleValue=QString::number(graphArray->minutesArray[posInArray].value);//отображаемое значение
-    QTime time=QTime::fromMSecsSinceStartOfDay(posInArray*60000);
-    visibleDateTime=graphArray->date.toString("dd_MM_yyyy ")+time.toString("hh:mm");
-    posY=this->height()-graphArray->minutesArray[posInArray].value*yFactor-40;
-}
 //////////////////////////////////////////////////////////////////
 void graphWidget::slotCalcAll(){
 
+}
+///////////////////////////////////////////////////////////////
+void graphWidget::mouseMoveSlot(int x, int y){
+    x=x+ui->viewWidget->x();
+    QRect rect=ui->valueLabel->geometry();
+
+    if(y>bottomPos){
+        rect.setY(bottomPos);
+    }
+    else{
+        rect.setY(y);
+    }
+    rect.setHeight(ui->valueLabel->height());
+    ui->valueLabel->setGeometry(rect);
+
+    rect=ui->timeLabel->geometry();
+    if(x>leftPos){
+        rect.setX(leftPos);
+    }
+    else{
+        rect.setX(x);
+    }
+    rect.setWidth(ui->timeLabel->width());
+    ui->timeLabel->setGeometry(rect);
+
+    rect=ui->eventLabel->geometry();
+    if(x>leftPos){
+        rect.setX(leftPos);
+    }
+    else{
+        rect.setX(x);
+    }
+    rect.setWidth(ui->eventLabel->width());
+    ui->eventLabel->setGeometry(rect);
+
+    ui->valueLabel->setText(ui->viewWidget->getCurrentValue());
+    ui->timeLabel->setText(ui->viewWidget->getCurrentTime());
+    ui->eventLabel->setText(ui->viewWidget->getCurrentEvent());
 }
 
 

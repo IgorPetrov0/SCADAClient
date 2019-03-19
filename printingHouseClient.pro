@@ -53,7 +53,8 @@ SOURCES += \
     widgets/mashinetable.cpp \
     widgets/perfomancewidget.cpp \
     tcpclient.cpp \
-    serviceClasses/connectionindicator.cpp
+    serviceClasses/connectionindicator.cpp \
+    widgets/graphviewwidget.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -82,7 +83,8 @@ HEADERS += \
     widgets/mashinetable.h \
     widgets/perfomancewidget.h \
     tcpclient.h \
-    serviceClasses/connectionindicator.h
+    serviceClasses/connectionindicator.h \
+    widgets/graphviewwidget.h
 
 FORMS += \
         mainwindow.ui \

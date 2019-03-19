@@ -46,6 +46,14 @@ void perfomanceWidget::updateContent(){
         ui->tableWidget->setItem(n,0,item);
         ui->tableWidget->setRowHeight(n,20);
     }
+    if(currentRow!=-1){
+        if(currentRow<size){
+            ui->tableWidget->setCurrentCell(currentRow,0);
+        }
+        else{
+            ui->tableWidget->setCurrentCell(0,0);
+        }
+    }
     ui->graphicWidget->updateContent();
 }
 ///////////////////////////////////////////////////////////////////////////////////////

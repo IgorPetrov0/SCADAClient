@@ -24,33 +24,24 @@ public:
     virtual void updateContent();
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void wheelEvent(QWheelEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
     void resizeEvent(QResizeEvent *event);
-    void mousePressEvent(QMouseEvent *event);
     QMenu *createContextMenu();
-    void calculateRails(int posInArray);
-    int mousePosX,mousePosY;
-    dayGraph *graphArray;
-    float yFactor;
-    float xFactor;
-    int graphZero;
-    int posY;
-    QString visibleValue;
-    QString visibleDateTime;
     QMenu *contextMenu;
+    int viewWidgetBottom;
+    int bottomPos;
+    int viewWidgetLeft;
+    int leftPos;
 
 protected slots:
     void slotCalcAll();
-
-
-
+    void mouseMoveSlot(int x, int y);
 
 
 private:
     Ui::graphWidget *ui;
 };
+
+
 
 #endif // GRAPHWIDGET_H
