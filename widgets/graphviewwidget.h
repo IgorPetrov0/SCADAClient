@@ -25,23 +25,25 @@ protected:
     int mousePosX,mousePosY;
     int posY;
     float yFactor;
-    float xFactor;//меняется при whileEvent и ипользуется дл отрисовки
-    float resizeXFactor;//меняется при resizeEvent
+    int xFactor;//меняется при whileEvent и ипользуется дл отрисовки
+    int resizeXFactor;//меняется при resizeEvent
     int xOffset;//смещение слайдером по горизонтали
     QString visibleValue;
     QString visibleDateTime;
     QString visibleEvent;
     QScrollBar *scrollBarPointer;
+    int maxValue;
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event);
     void calculateRails(int posInArray);
     void wheelEvent(QWheelEvent *event);
     void resizeEvent(QResizeEvent *event);
-
+    void calcFactors();
 
 signals:
     void mouseMoveSignal(int x,int y);
+    void wheelSignal(int xFactor);
 
 
 public slots:

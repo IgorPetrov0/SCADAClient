@@ -15,7 +15,7 @@ perfomanceWidget::perfomanceWidget(QWidget *parent) :
     connect(ui->editButton,SIGNAL(clicked(bool)),this,SLOT(objectEditSlot()));
     connect(ui->deleteButton,SIGNAL(clicked(bool)),this,SLOT(objectDeleteSlot()));
     connect(ui->tableWidget,SIGNAL(createReport(reportType,int)),this,SIGNAL(createReportSygnal(reportType,int)));
-    connect(ui->tableWidget,SIGNAL(cellClicked(int,int)),this,SLOT(selectMashineSlot(int,int)));
+    connect(ui->tableWidget,SIGNAL(),this,SLOT(selectMashineSlot(int,int)));
     connect(ui->tableWidget,SIGNAL(enotherDaySignal(int)),this,SIGNAL(enotherDaySignal(int)));
 }
 //////////////////////////////////////////////////////////////////////
@@ -30,6 +30,7 @@ void perfomanceWidget::updateContent(){
         return;
     }
     int size=netCorePointer->getMashinsCount();
+    int currentRow=ui->tableWidget->currentRow();
     ui->tableWidget->clear();
     ui->tableWidget->setRowCount(size);
     for(int n=0;n!=size;n++){
@@ -48,11 +49,17 @@ void perfomanceWidget::updateContent(){
     }
     if(currentRow!=-1){
         if(currentRow<size){
-            ui->tableWidget->setCurrentCell(currentRow,0);
+            ui->tableWidget->selectRow(currentRow);
+            selectMashineSlot(currentRow,0);
         }
         else{
-            ui->tableWidget->setCurrentCell(0,0);
+            ui->tableWidget->selectRow(0);
+            selectMashineSlot(0,0);
         }
+    }
+    else{
+        ui->tableWidget->selectRow(0);
+        selectMashineSlot(0,0);
     }
     ui->graphicWidget->updateContent();
 }

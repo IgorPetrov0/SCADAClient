@@ -158,18 +158,32 @@ void tcpClient::updateState(){
 /////////////////////////////////////////////////////////////////////////////
 void tcpClient::decodeStatistic(QDataStream *str){
     int size=mashinesArray.size();
-    if(size!=0){
-        for(int n=0;n!=size;n++){
-            delete mashinesArray.at(n);
-        }
-        mashinesArray.clear();
-    }
+    QVector<mashine*>tmpVector;
     *str>>size;
     for(int n=0;n!=size;n++){
         mashine *tmpMashine = new mashine;
         tmpMashine->netDeserialise(str);
-        mashinesArray.append(tmpMashine);
+        tmpVector.append(tmpMashine);
     }
+    //ищем и переписываем одноименные машины т.к. порядок машин у клиента и сервера может отличаться
+    int arraySize=mashinesArray.size();
+    for(int n=0;n!=size;n++){
+        int m=0;
+        for(;m!=arraySize;m++){
+            mashine *tmpMashine=mashinesArray.at(m);
+            if(tmpVector.at(n)->getName()==tmpMashine->getName()){
+                delete tmpMashine;
+                mashinesArray[m]=tmpVector.at(n);
+                break;
+            }
+        }
+        if(m==arraySize){//если машина не найдена,
+            mashinesArray.append(tmpVector.at(n));
+        }
+    }
+
+
+
 }
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){

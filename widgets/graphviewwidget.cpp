@@ -9,42 +9,27 @@ graphViewWidget::graphViewWidget(QWidget *parent)
     resizeXFactor=2;
     xOffset=0;
     posY=0;
+    maxValue=0;
     scrollBarPointer=nullptr;
     this->setMouseTracking(true);
 }
 //////////////////////////////////////////////////////////////////////////////////
 void graphViewWidget::visualiseGraph(dayGraph *array){
-    int maxValue=0;
     maxValue=array->minutesArray[0].value;
     for(int n=1;n!=1440;n++){
         if(maxValue<array->minutesArray[n].value){
             maxValue=array->minutesArray[n].value;
         }
     }
-    float tmp=graphZero/4*3;//три четверти от размера виджета
-    if(tmp!=0){//tmp может стать нулем, если все значения =0
-        if(tmp>maxValue){
-            yFactor=maxValue/tmp;//оставляем сверху четверть от максимального значения
-        }
-        else{
-            yFactor=tmp/maxValue;
-        }
-    }
-    else{
-        yFactor=1;
-    }
-
-    //рассчитываем xFactor так, чтобы уместить сутки на графике
-    resizeXFactor=((float)this->width()-30)/1440;
-    xFactor=resizeXFactor;
     graphArray=array;
+    calcFactors();
 }
 ///////////////////////////////////////////////////////////////////////////
 void graphViewWidget::mouseMoveEvent(QMouseEvent *event){
     mousePosX=event->x();
     mousePosY=event->y();
     if(graphArray!=NULL){
-        calculateRails(mousePosX/xFactor);//позиция в массиве зависит от позиции мыши на экране);
+        calculateRails((mousePosX+xOffset)/xFactor);//позиция в массиве зависит от позиции мыши на экране);
     }
     emit mouseMoveSignal(mousePosX,posY);
     update();
@@ -85,17 +70,22 @@ void graphViewWidget::paintEvent(QPaintEvent *event){
             }
             int xPos=xFactor+xOffset;
             if(n==0){
-                painter.drawPoint(n*xPos,graphValue);
+                painter.drawPoint(n*xFactor-xOffset,graphValue);
             }
             else{
                 int prevValue=graphZero-graphArray->minutesArray[n-1].value*yFactor;
-                painter.drawLine((n-1)*xPos,prevValue,n*xPos,graphValue);
+                painter.drawLine((n-1)*xFactor-xOffset,prevValue,n*xFactor-xOffset,graphValue);
             }
         }
         //направляющие
         painter.setPen(QPen(Qt::black,1,Qt::SolidLine));
-        painter.drawLine(0,posY,this->width(),posY);
-        painter.drawLine(mousePosX,0,mousePosX,this->height()-0);
+        painter.drawLine(0,posY,this->width(),posY);//горизонтальная
+        painter.drawLine(mousePosX,0,mousePosX,this->height()-0);//вертикальная
+
+        //для отладки
+        painter.drawText(10,10,"xFactor="+QString::number(xFactor));
+        painter.drawText(10,20,"mousePosX="+QString::number(mousePosX));
+        painter.drawText(10,30,"xOffset="+QString::number(xOffset));
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////
@@ -126,6 +116,7 @@ void graphViewWidget::calculateRails(int posInArray){
                 break;
             }
         }
+
         posY=this->height()-graphArray->minutesArray[posInArray].value*yFactor-40;
     }
 }
@@ -133,10 +124,10 @@ void graphViewWidget::calculateRails(int posInArray){
 void graphViewWidget::wheelEvent(QWheelEvent *event){
     QPoint angle=event->angleDelta();
     if(angle.y()>0){
-        xFactor+=0.1f;
+        xFactor+=1;
     }
     else{
-        xFactor-=0.1f;
+        xFactor-=1;
     }
     if(xFactor>=resizeXFactor){
         scrollBarPointer->setVisible(true);
@@ -145,17 +136,40 @@ void graphViewWidget::wheelEvent(QWheelEvent *event){
         scrollBarPointer->setVisible(false);
         xFactor=resizeXFactor;
     }
+
+    emit wheelSignal(xFactor);
     updateContent();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void graphViewWidget::resizeEvent(QResizeEvent *event){
     graphZero=this->height()-40;
-    resizeXFactor=((float)this->width()-30)/1440;
+    calcFactors();
+}
+//////////////////////////////////////////////////////////////////////////////////
+void graphViewWidget::calcFactors(){
+    float tmp=graphZero/4*3;//три четверти от размера виджета
+    if(tmp!=0){//tmp может стать нулем, если все значения =0
+        if(tmp>maxValue){
+            yFactor=maxValue/tmp;//оставляем сверху четверть от максимального значения
+        }
+        else{
+            yFactor=tmp/maxValue;
+        }
+    }
+    else{
+        yFactor=1;
+    }
+
+    //рассчитываем xFactor так, чтобы уместить сутки на графике
+    resizeXFactor=this->width()/1440;
+    if(resizeXFactor==0){
+        resizeXFactor=1;
+    }
     xFactor=resizeXFactor;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void graphViewWidget::sliderMovedSlot(int value){
-    xOffset=-value;
+    xOffset=value;
     update();
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,7 +177,7 @@ void graphViewWidget::updateContent(){
     if(!this->hasMouseTracking()){
         int posInArray=QTime::currentTime().msecsSinceStartOfDay()/60000;
         calculateRails(posInArray);
-        mousePosX=posInArray*xFactor+30;
+        mousePosX=posInArray*xFactor-xOffset;
         emit mouseMoveSignal(mousePosX,posY);
     }
     update();
