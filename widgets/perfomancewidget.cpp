@@ -15,7 +15,7 @@ perfomanceWidget::perfomanceWidget(QWidget *parent) :
     connect(ui->editButton,SIGNAL(clicked(bool)),this,SLOT(objectEditSlot()));
     connect(ui->deleteButton,SIGNAL(clicked(bool)),this,SLOT(objectDeleteSlot()));
     connect(ui->tableWidget,SIGNAL(createReport(reportType,int)),this,SIGNAL(createReportSygnal(reportType,int)));
-    connect(ui->tableWidget,SIGNAL(),this,SLOT(selectMashineSlot(int,int)));
+    connect(ui->tableWidget,SIGNAL(cellClicked(int,int)),this,SLOT(selectMashineSlot(int,int)));
     connect(ui->tableWidget,SIGNAL(enotherDaySignal(int)),this,SIGNAL(enotherDaySignal(int)));
 }
 //////////////////////////////////////////////////////////////////////

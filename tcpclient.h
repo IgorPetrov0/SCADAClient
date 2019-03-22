@@ -56,6 +56,7 @@ protected:
 signals:
     void connectSignal();
     void errorSignal();
+    void statisticUpdated();
 
 protected slots:
     void connectSlot();

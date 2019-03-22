@@ -48,6 +48,7 @@ protected slots:
     void netSettingSlot();
     void netErrorSlot();
     void netConnectSlot();
+    void netUpdateStatistic();
 
 private:
     Ui::MainWindow *ui;

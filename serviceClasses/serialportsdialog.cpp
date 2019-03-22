@@ -65,7 +65,7 @@ void serialPortsDialog::setPort(QString name, int number){
         case(1):{
             int size=ui->number_1->count();
             int n=0;
-            for(n;n!=size;n++){
+            for(;n!=size;n++){
                 if(ui->number_1->itemText(n)==name){
                     ui->number_1->setCurrentIndex(n);
                     break;
@@ -84,7 +84,7 @@ void serialPortsDialog::setPort(QString name, int number){
         case(2):{
             int size=ui->number_2->count();
             int n=0;
-            for(n;n!=size;n++){
+            for(;n!=size;n++){
                 if(ui->number_2->itemText(n)==name){
                     ui->number_2->setCurrentIndex(n);
                     break;

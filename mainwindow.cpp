@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updateTimer,SIGNAL(timeout()),this,SLOT(updateTimeSlot()));
     connect(&netCore,SIGNAL(errorSignal()),this,SLOT(netErrorSlot()));
     connect(&netCore,SIGNAL(connectSignal()),this,SLOT(netConnectSlot()));
+    connect(&netCore,SIGNAL(statisticUpdated()),this,SLOT(netUpdateStatistic()));
     appPath=QApplication::applicationDirPath();
 
     conIndicator = new connectionIndicator(tr("Соединение с сервером"));
@@ -201,6 +202,10 @@ void MainWindow::netErrorSlot(){
 /////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::netConnectSlot(){
 
+}
+//////////////////////////////////////////////////////////////////////////////////////
+void MainWindow::netUpdateStatistic(){
+    ui->mainTab->updateContent();
 }
 //////////////////////////////////////////////////////////////////////////////////
 void MainWindow::initialise(){

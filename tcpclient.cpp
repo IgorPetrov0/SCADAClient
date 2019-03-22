@@ -96,11 +96,23 @@ int tcpClient::getMashinsCount(){
 }
 ///////////////////////////////////////////////////////////////////////
 bool tcpClient::mashineUp(int index){
-
+    if(index>0){
+        mashine *tmp=mashinesArray.at(index);
+        mashinesArray.remove(index);
+        mashinesArray.insert(index-1,tmp);
+        return true;
+    }
+    return false;
 }
 /////////////////////////////////////////////////////////////////////////
 bool tcpClient::mashineDown(int index){
-
+    if(index<mashinesArray.size()-1){
+        mashine *tmp=mashinesArray.at(index);
+        mashinesArray.remove(index);
+        mashinesArray.insert(index+1,tmp);
+        return true;
+    }
+    return false;
 }
 /////////////////////////////////////////////////////////////////
 void tcpClient::connectToServer(){
@@ -183,7 +195,7 @@ void tcpClient::decodeStatistic(QDataStream *str){
     }
 
 
-
+    emit statisticUpdated();
 }
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){
