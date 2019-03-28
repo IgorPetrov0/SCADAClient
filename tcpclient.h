@@ -39,6 +39,7 @@ public:
     bool isConnecting();
     void sendCommand();
     void updateState();
+    bool editObject();
 
 
 

@@ -75,9 +75,8 @@ void MainWindow::editObjectSlot(objectType type, int index){
     master.loadObject(tmp);
     master.setNetCorePointer(&netCore);
     if(master.exec()==QDialog::Accepted){
-        QByteArray arr=master.getObjectData();
-        QDataStream str(&arr,QIODevice::ReadOnly);
         ui->mainTab->updateContent();
+
     }
 }
 ////////////////////////////////////////////////////////////////////////////////

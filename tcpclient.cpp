@@ -84,7 +84,16 @@ bool tcpClient::readConfiguration(QString workingDir){
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 bool tcpClient::isNameExist(QString name, object *ob){
-
+    int size=mashinesArray.size();
+    for(int n=0;n!=size;n++){
+        object *tmp=mashinesArray.at(n);
+        if(ob!=tmp){//не проверяем указанный объект
+            if(mashinesArray.at(n)->getName()==name){
+                return true;
+            }
+        }
+    }
+    return false;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 object *tcpClient::getObjectForAddress(int address, object *ob){
@@ -167,6 +176,10 @@ void tcpClient::updateState(){
         socket->flush();
     }
 }
+//////////////////////////////////////////////////////////////////////////////
+bool tcpClient::editObject(){
+
+}
 /////////////////////////////////////////////////////////////////////////////
 void tcpClient::decodeStatistic(QDataStream *str){
     int size=mashinesArray.size();
@@ -215,6 +228,18 @@ void tcpClient::readyReadSlot(){
     if(packetSize==incomingBuffer.size()){
         switch(currentState){
             case(SERVERCOMMAND_GET_STATISTIC):{//если ждем статистику от сервера
+                uchar type;
+                str>>type;
+                if(type==TCP_PACKET_STATISTIC){
+                    decodeStatistic(&str);
+                }
+                else{
+                    setLastError(tr("Неверный формат пакета от сервера"));
+                    emit errorSignal();
+                }
+                break;
+            }
+            case(SERVERCOMMAND_EDIT_OBJECT):{
                 uchar type;
                 str>>type;
                 if(type==TCP_PACKET_STATISTIC){

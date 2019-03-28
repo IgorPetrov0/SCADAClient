@@ -19,7 +19,8 @@ enum requestType{
 
 enum serverCommand{
     SERVERCOMMAND_NO_COMMAND=0,
-    SERVERCOMMAND_GET_STATISTIC
+    SERVERCOMMAND_GET_STATISTIC,
+    SERVERCOMMAND_EDIT_OBJECT
 };
 
 enum tcpPacketType{
