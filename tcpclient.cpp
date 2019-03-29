@@ -177,8 +177,31 @@ void tcpClient::updateState(){
     }
 }
 //////////////////////////////////////////////////////////////////////////////
-bool tcpClient::editObject(){
-
+bool tcpClient::editObject(object *editedObject){
+    if(socket->state()==QAbstractSocket::ConnectedState){
+        currentState=SERVERCOMMAND_EDIT_OBJECT;
+        QByteArray array;
+        QDataStream str(&array,QIODevice::WriteOnly);
+        str<<qint64(sizeof(qint64)+2);
+        str<<(uchar)TCP_PACKET_COMMAND;
+        str<<(uchar)currentState;
+        switch(editedObject->getType()){
+            case(objectMashine):{
+                mashine *tmp=static_cast<mashine*>(editedObject);
+                tmp->serialisation(&str);
+                break;
+            }
+            default:{
+                editedObject->serialisation(&str);
+                break;
+            }
+        }
+        socket->write(array);
+        socket->flush();
+        return true;
+    }
+    setLastError(tr("Сервер не доступен."));
+    return false;
 }
 /////////////////////////////////////////////////////////////////////////////
 void tcpClient::decodeStatistic(QDataStream *str){

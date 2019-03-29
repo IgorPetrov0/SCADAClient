@@ -70,13 +70,16 @@ void MainWindow::editObjectSlot(objectType type, int index){
         }
     }
     if(tmp==NULL){
-        errorMessage(netCore.getLastError());
+        errorMessage(tr("Внутренняя ошибка. Указанного объекта не существует."));
+        return;
     }
     master.loadObject(tmp);
     master.setNetCorePointer(&netCore);
     if(master.exec()==QDialog::Accepted){
+        if(!netCore.editObject(tmp)){
+            errorMessage(netCore.getLastError());
+        }
         ui->mainTab->updateContent();
-
     }
 }
 ////////////////////////////////////////////////////////////////////////////////

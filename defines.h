@@ -25,7 +25,9 @@ enum serverCommand{
 
 enum tcpPacketType{
     TCP_PACKET_COMMAND=0,
-    TCP_PACKET_STATISTIC
+    TCP_PACKET_STATISTIC,
+    TCP_PACKET_ANSWER,
+    TCP_PACKET_ERROR
 };
 
 
