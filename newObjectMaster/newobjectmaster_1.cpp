@@ -33,7 +33,7 @@ bool newObjectMaster_1::next(){
         return false;
     }
     int address=ui->addressSpinBox->value();
-    object *tmp=netCorePointer->getObjectForAddress(ui->addressSpinBox->value(),currentObject);
+    object *tmp=netCorePointer->getObjectForAddress(address,currentObject);
     if(tmp!=NULL){
         QString existObjectName=tmp->getName();
         QMessageBox box(this);

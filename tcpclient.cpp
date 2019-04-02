@@ -97,7 +97,17 @@ bool tcpClient::isNameExist(QString name, object *ob){
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 object *tcpClient::getObjectForAddress(int address, object *ob){
-
+    int size=mashinesArray.size();
+    object *tmp=NULL;
+    for(int n=0;n!=size;n++){
+        tmp=mashinesArray.at(n);
+        if(tmp!=ob){//не проверяем указанный объект. Во первых нет смысла, во вторых для возможности редактировать
+            if(tmp->getAddress()==address){
+                return tmp;
+            }
+        }
+    }
+    return NULL;
 }
 ////////////////////////////////////////////////////////////////////////
 int tcpClient::getMashinsCount(){

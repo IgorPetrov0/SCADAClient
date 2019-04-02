@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    updateTime=10000;
     updateTimer = new QTimer(this);
     connect(ui->actionNewObject,SIGNAL(triggered(bool)),this,SLOT(createNewObjectSlot()));
     connect(ui->mainTab,SIGNAL(addObjectSignal()),this,SLOT(createNewObjectSlot()));
@@ -26,7 +27,6 @@ MainWindow::MainWindow(QWidget *parent) :
     conIndicator->setMinimumSize(30,10);
     statusBar()->addPermanentWidget(conIndicator,0);
     statusBar()->setSizeGripEnabled(true);
-
     errorMessageBox=NULL;
 }
 ////////////////////////////////////////////////////////////////
@@ -57,6 +57,7 @@ void MainWindow::createNewObjectSlot(){
 }
 ///////////////////////////////////////////////////////////////////////////////////
 void MainWindow::editObjectSlot(objectType type, int index){
+    updateTimer->stop();//останавливаем обновления т.к. адреса объектов при обновлении смещаются
     newObjectMasterBase master;
     object *tmp=NULL;
     switch(type){
@@ -69,7 +70,7 @@ void MainWindow::editObjectSlot(objectType type, int index){
             return;
         }
     }
-    if(tmp==NULL){
+    if(tmp==nullptr){
         errorMessage(tr("Внутренняя ошибка. Указанного объекта не существует."));
         return;
     }
@@ -81,6 +82,7 @@ void MainWindow::editObjectSlot(objectType type, int index){
         }
         ui->mainTab->updateContent();
     }
+    updateTimer->start(updateTime);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::deleteObjectSlot(objectType type, int index){
@@ -218,7 +220,7 @@ void MainWindow::initialise(){
         return;
     }
     netCore.connectToServer();
-    updateTimer->start(10000);
+    updateTimer->start(updateTime);
 }
 ///////////////////////////////////////////////////////////////////////////////////
 void MainWindow::errorMessage(QString error){

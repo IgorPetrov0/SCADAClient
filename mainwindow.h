@@ -36,6 +36,8 @@ protected:
     QMessageBox *errorMessageBox;
     void resizeEvent(QResizeEvent *event);
     void errorMessage(QString error);
+    object *tmpObj;
+    int updateTime;
 
 protected slots:
     void createNewObjectSlot();
