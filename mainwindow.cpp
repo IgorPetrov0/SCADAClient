@@ -20,20 +20,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updateTimer,SIGNAL(timeout()),this,SLOT(updateTimeSlot()));
     connect(&netCore,SIGNAL(errorSignal()),this,SLOT(netErrorSlot()));
     connect(&netCore,SIGNAL(connectSignal()),this,SLOT(netConnectSlot()));
-    connect(&netCore,SIGNAL(statisticUpdated()),this,SLOT(netUpdateStatistic()));
+    connect(&netCore,SIGNAL(statisticUpdatedSignal()),this,SLOT(netUpdateStatistic()));
+    connect(&netCore,SIGNAL(serverAnswerSignal(QString)),this,SLOT(serverAnswerSlot(QString)));
     appPath=QApplication::applicationDirPath();
 
     conIndicator = new connectionIndicator(tr("Соединение с сервером"));
     conIndicator->setMinimumSize(30,10);
     statusBar()->addPermanentWidget(conIndicator,0);
     statusBar()->setSizeGripEnabled(true);
-    errorMessageBox=NULL;
+    messageBox=NULL;
 }
 ////////////////////////////////////////////////////////////////
 MainWindow::~MainWindow()
 { 
-    if(errorMessageBox!=NULL){
-        delete errorMessageBox;
+    if(messageBox!=NULL){
+        delete messageBox;
     }
     delete conIndicator;
     delete ui;
@@ -48,8 +49,7 @@ void MainWindow::createNewObjectSlot(){
     master.setNetCorePointer(&netCore);
     if(master.exec()==QDialog::Accepted){
         QByteArray arr=master.getObjectData();
-        QDataStream str(&arr,QIODevice::ReadOnly);
-        if(!netCore.createObject(&str)){
+        if(!netCore.createObject(arr)){
             errorMessage(netCore.getLastError());
         }
         ui->mainTab->updateContent();
@@ -211,6 +211,18 @@ void MainWindow::netConnectSlot(){
 void MainWindow::netUpdateStatistic(){
     ui->mainTab->updateContent();
 }
+/////////////////////////////////////////////////////////////////////////////////////
+void MainWindow::serverAnswerSlot(QString answer){
+    if(messageBox==NULL){
+        messageBox = new QMessageBox(this);
+        messageBox->setDefaultButton(QMessageBox::Ok);
+        messageBox->setWindowTitle(tr("Ответ сервера"));
+        messageBox->setText(answer);
+        messageBox->exec();
+        delete messageBox;
+        messageBox=NULL;
+    }
+}
 //////////////////////////////////////////////////////////////////////////////////
 void MainWindow::initialise(){
     QString appPath=QApplication::applicationDirPath();
@@ -224,14 +236,14 @@ void MainWindow::initialise(){
 }
 ///////////////////////////////////////////////////////////////////////////////////
 void MainWindow::errorMessage(QString error){
-    if(errorMessageBox==NULL){
-        errorMessageBox = new QMessageBox(this);
-        errorMessageBox->setDefaultButton(QMessageBox::Ok);
-        errorMessageBox->setWindowTitle(tr("Ошибка"));
-        errorMessageBox->setText(error);
-        errorMessageBox->exec();
-        delete errorMessageBox;
-        errorMessageBox=NULL;
+    if(messageBox==NULL){
+        messageBox = new QMessageBox(this);
+        messageBox->setDefaultButton(QMessageBox::Ok);
+        messageBox->setWindowTitle(tr("Ошибка"));
+        messageBox->setText(error);
+        messageBox->exec();
+        delete messageBox;
+        messageBox=NULL;
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////

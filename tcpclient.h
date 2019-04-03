@@ -17,7 +17,7 @@ public:
     tcpClient(QObject *parent=0);
     ~tcpClient();
     mashine *getMashine(int index);
-    bool createObject(QDataStream *str);
+    bool createObject(QByteArray array);
     void deleteObject(object *ob, bool objectOnly=false);
     bool writeConfiguration(QString workingDir);
     dayGraph *readGraphFile(QString fullPath);//при использовании не забывать удалять полученные данные
@@ -52,12 +52,16 @@ protected:
     QVector<mashine*> mashinesArray;
     QByteArray incomingBuffer;
     void decodeStatistic(QDataStream *str);
+    void decodeAnswer(QDataStream *str);
+    void decodeError(QDataStream *str);
 
 
 signals:
     void connectSignal();
     void errorSignal();
-    void statisticUpdated();
+    void statisticUpdatedSignal();
+    void serverAnswerSignal(QString answer);
+
 
 protected slots:
     void connectSlot();

@@ -33,7 +33,7 @@ protected:
     connectionIndicator *conIndicator;
     QString appPath;
     QTimer *updateTimer;
-    QMessageBox *errorMessageBox;
+    QMessageBox *messageBox;//окно глобальное для того, чтобы при отсутствии реакции пользователя окна не плодились
     void resizeEvent(QResizeEvent *event);
     void errorMessage(QString error);
     object *tmpObj;
@@ -51,6 +51,7 @@ protected slots:
     void netErrorSlot();
     void netConnectSlot();
     void netUpdateStatistic();
+    void serverAnswerSlot(QString answer);
 
 private:
     Ui::MainWindow *ui;

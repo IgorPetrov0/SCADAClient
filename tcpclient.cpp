@@ -24,8 +24,22 @@ mashine *tcpClient::getMashine(int index){
     return mashinesArray.at(index);
 }
 ///////////////////////////////////////////////////////////
-bool tcpClient::createObject(QDataStream *str){
-
+bool tcpClient::createObject(QByteArray array){
+    if(socket->state()==QAbstractSocket::ConnectedState){
+        currentState=SERVERCOMMAND_CREATE_OBJECT;
+        QDataStream str(&array,QIODevice::WriteOnly);
+        str<<qint64(0);
+        str<<uchar(TCP_PACKET_COMMAND);
+        str<<uchar(SERVERCOMMAND_CREATE_OBJECT);
+        str<<array;
+        str.device()->seek(0);
+        str<<qint64(array.size());
+        socket->write(array);
+        socket->flush();
+        return true;
+    }
+    setLastError(tr("Сервер не доступен."));
+    return false;
 }
 //////////////////////////////////////////////////////////////////////
 void tcpClient::deleteObject(object *ob, bool objectOnly){
@@ -179,9 +193,11 @@ void tcpClient::updateState(){
         currentState=SERVERCOMMAND_GET_STATISTIC;
         QByteArray array;
         QDataStream str(&array,QIODevice::WriteOnly);
-        str<<qint64(sizeof(qint64)+2);
-        str<<(uchar)TCP_PACKET_COMMAND;
-        str<<(uchar)currentState;
+        str<<qint64(0);
+        str<<uchar(TCP_PACKET_COMMAND);
+        str<<uchar(SERVERCOMMAND_GET_STATISTIC);
+        str.device()->seek(0);
+        str<<qint64(array.size());
         socket->write(array);
         socket->flush();
     }
@@ -192,9 +208,9 @@ bool tcpClient::editObject(object *editedObject){
         currentState=SERVERCOMMAND_EDIT_OBJECT;
         QByteArray array;
         QDataStream str(&array,QIODevice::WriteOnly);
-        str<<qint64(sizeof(qint64)+2);
-        str<<(uchar)TCP_PACKET_COMMAND;
-        str<<(uchar)currentState;
+        str<<qint64(0);
+        str<<uchar(TCP_PACKET_COMMAND);
+        str<<uchar(SERVERCOMMAND_EDIT_OBJECT);
         switch(editedObject->getType()){
             case(objectMashine):{
                 mashine *tmp=static_cast<mashine*>(editedObject);
@@ -206,6 +222,8 @@ bool tcpClient::editObject(object *editedObject){
                 break;
             }
         }
+        str.device()->seek(0);
+        str<<qint64(array.size());
         socket->write(array);
         socket->flush();
         return true;
@@ -215,33 +233,60 @@ bool tcpClient::editObject(object *editedObject){
 }
 /////////////////////////////////////////////////////////////////////////////
 void tcpClient::decodeStatistic(QDataStream *str){
-    int size=mashinesArray.size();
-    QVector<mashine*>tmpVector;
-    *str>>size;
-    for(int n=0;n!=size;n++){
-        mashine *tmpMashine = new mashine;
-        tmpMashine->netDeserialise(str);
-        tmpVector.append(tmpMashine);
-    }
-    //ищем и переписываем одноименные машины т.к. порядок машин у клиента и сервера может отличаться
-    int arraySize=mashinesArray.size();
-    for(int n=0;n!=size;n++){
-        int m=0;
-        for(;m!=arraySize;m++){
-            mashine *tmpMashine=mashinesArray.at(m);
-            if(tmpVector.at(n)->getName()==tmpMashine->getName()){
-                delete tmpMashine;
-                mashinesArray[m]=tmpVector.at(n);
-                break;
+    uchar type;
+    *str>>type;
+    switch(type){
+        case(TCP_PACKET_STATISTIC):{
+            int size=mashinesArray.size();
+            QVector<mashine*>tmpVector;
+            *str>>size;
+            for(int n=0;n!=size;n++){
+                mashine *tmpMashine = new mashine;
+                tmpMashine->netDeserialise(str);
+                tmpVector.append(tmpMashine);
             }
+            //ищем и переписываем одноименные машины т.к. порядок машин у клиента и сервера может отличаться
+            int arraySize=mashinesArray.size();
+            for(int n=0;n!=size;n++){
+                int m=0;
+                for(;m!=arraySize;m++){
+                    mashine *tmpMashine=mashinesArray.at(m);
+                    if(tmpVector.at(n)->getName()==tmpMashine->getName()){
+                        delete tmpMashine;
+                        mashinesArray[m]=tmpVector.at(n);
+                        break;
+                    }
+                }
+                if(m==arraySize){//если машина не найдена,
+                    mashinesArray.append(tmpVector.at(n));
+                }
+            }
+            emit statisticUpdatedSignal();
+            break;
         }
-        if(m==arraySize){//если машина не найдена,
-            mashinesArray.append(tmpVector.at(n));
+        case(TCP_PACKET_ERROR):{
+            decodeError(str);
+            break;
+        }
+        default:{
+            setLastError(tr("Неверный формат пакета от сервера"));
+            emit errorSignal();
+            break;
         }
     }
-
-
-    emit statisticUpdated();
+}
+//////////////////////////////////////////////////////////////////////////////
+void tcpClient::decodeAnswer(QDataStream *str){
+    QString answer;
+    *str>>answer;
+    emit serverAnswerSignal(answer);
+}
+/////////////////////////////////////////////////////////////////////////////////
+void tcpClient::decodeError(QDataStream *str){
+    QString errorString;
+    *str>>errorString;
+    setLastError(errorString);
+    emit errorSignal();
 }
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){
@@ -261,27 +306,50 @@ void tcpClient::readyReadSlot(){
     if(packetSize==incomingBuffer.size()){
         switch(currentState){
             case(SERVERCOMMAND_GET_STATISTIC):{//если ждем статистику от сервера
-                uchar type;
-                str>>type;
-                if(type==TCP_PACKET_STATISTIC){
-                    decodeStatistic(&str);
-                }
-                else{
-                    setLastError(tr("Неверный формат пакета от сервера"));
-                    emit errorSignal();
-                }
+                decodeStatistic(&str);
+                currentState=SERVERCOMMAND_NO_COMMAND;
                 break;
             }
             case(SERVERCOMMAND_EDIT_OBJECT):{
                 uchar type;
                 str>>type;
-                if(type==TCP_PACKET_STATISTIC){
-                    decodeStatistic(&str);
+                switch(type){
+                    case(TCP_PACKET_ANSWER):{
+                        decodeAnswer(&str);
+                        break;
+                    }
+                    case(TCP_PACKET_ERROR):{
+                        decodeError(&str);
+                        break;
+                    }
+                    default:{
+                        setLastError(tr("Неверный формат пакета от сервера"));
+                        emit errorSignal();
+                        break;
+                    }
                 }
-                else{
-                    setLastError(tr("Неверный формат пакета от сервера"));
-                    emit errorSignal();
+                currentState=SERVERCOMMAND_NO_COMMAND;
+                break;
+            }
+            case(SERVERCOMMAND_CREATE_OBJECT):{
+                uchar type;
+                str>>type;
+                switch(type){
+                    case(TCP_PACKET_ANSWER):{
+                        decodeAnswer(&str);
+                        break;
+                    }
+                    case(TCP_PACKET_ERROR):{
+                        decodeError(&str);
+                        break;
+                    }
+                    default:{
+                        setLastError(tr("Неверный формат пакета от сервера"));
+                        emit errorSignal();
+                        break;
+                    }
                 }
+                currentState=SERVERCOMMAND_NO_COMMAND;
                 break;
             }
         }
