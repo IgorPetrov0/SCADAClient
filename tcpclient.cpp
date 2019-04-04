@@ -27,14 +27,15 @@ mashine *tcpClient::getMashine(int index){
 bool tcpClient::createObject(QByteArray array){
     if(socket->state()==QAbstractSocket::ConnectedState){
         currentState=SERVERCOMMAND_CREATE_OBJECT;
-        QDataStream str(&array,QIODevice::WriteOnly);
+        QByteArray outArray;
+        QDataStream str(&outArray,QIODevice::WriteOnly);
         str<<qint64(0);
         str<<uchar(TCP_PACKET_COMMAND);
         str<<uchar(SERVERCOMMAND_CREATE_OBJECT);
         str<<array;
         str.device()->seek(0);
-        str<<qint64(array.size());
-        socket->write(array);
+        str<<qint64(outArray.size());
+        socket->write(outArray);
         socket->flush();
         return true;
     }
