@@ -43,8 +43,29 @@ bool tcpClient::createObject(QByteArray array){
     return false;
 }
 //////////////////////////////////////////////////////////////////////
-void tcpClient::deleteObject(object *ob, bool objectOnly){
-
+bool tcpClient::deleteObject(object *ob, bool objectOnly){
+    if(socket->state()==QAbstractSocket::ConnectedState){
+        currentState=SERVERCOMMAND_DELETE_OBJECT;
+        QByteArray outArray;
+        QDataStream str(&outArray,QIODevice::WriteOnly);
+        str<<qint64(0);
+        str<<uchar(TCP_PACKET_COMMAND);
+        str<<uchar(SERVERCOMMAND_DELETE_OBJECT);
+        str<<ob->getName();
+        if(objectOnly){
+            str<<qint8(0);
+        }
+        else{
+            str<<qint8(1);
+        }
+        str.device()->seek(0);
+        str<<qint64(outArray.size());
+        socket->write(outArray);
+        socket->flush();
+        return true;
+    }
+    setLastError(tr("Сервер не доступен."));
+    return false;
 }
 ///////////////////////////////////////////////////////////////////////
 bool tcpClient::writeConfiguration(QString workingDir){

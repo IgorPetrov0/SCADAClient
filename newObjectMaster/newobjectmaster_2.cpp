@@ -62,7 +62,7 @@ bool newObjectMaster_2::next(){
     }
 
     mObject->setLineColor(ui->pushButton->getColor());
-    mObject->setPathForStatistics(QApplication::applicationDirPath()+STAT_PATH);
+    //mObject->setPathForStatistics(QApplication::applicationDirPath()+STAT_PATH);
     //формируем смены
     shift tmpShift;
     //первая и обязательная

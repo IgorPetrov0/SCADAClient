@@ -118,8 +118,6 @@ void MainWindow::deleteObjectSlot(objectType type, int index){
     else{
         qDebug("MainWindow::deleteObjectSlot : Object is NULL");
     }
-
-
 }
 ///////////////////////////////////////////////////////////////////////////////
 void MainWindow::openGraphSlot(int index){

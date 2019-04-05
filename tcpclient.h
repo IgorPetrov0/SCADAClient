@@ -18,7 +18,7 @@ public:
     ~tcpClient();
     mashine *getMashine(int index);
     bool createObject(QByteArray array);
-    void deleteObject(object *ob, bool objectOnly=false);
+    bool deleteObject(object *ob, bool objectOnly=false);
     bool writeConfiguration(QString workingDir);
     dayGraph *readGraphFile(QString fullPath);//при использовании не забывать удалять полученные данные
     //строит отчет по заданным датам
