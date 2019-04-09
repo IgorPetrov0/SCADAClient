@@ -54,6 +54,7 @@ protected:
     void decodeStatistic(QDataStream *str);
     void decodeAnswer(QDataStream *str);
     void decodeError(QDataStream *str);
+    void decErrorOrAnswer(QDataStream *str);
 
 
 signals:

@@ -310,6 +310,27 @@ void tcpClient::decodeError(QDataStream *str){
     setLastError(errorString);
     emit errorSignal();
 }
+//////////////////////////////////////////////////////////////////////////////////
+void tcpClient::decErrorOrAnswer(QDataStream *str){
+    uchar type;
+    *str>>type;
+    switch(type){
+        case(TCP_PACKET_ANSWER):{
+            decodeAnswer(str);
+            break;
+        }
+        case(TCP_PACKET_ERROR):{
+            decodeError(str);
+            break;
+        }
+        default:{
+            setLastError(tr("Неверный формат пакета от сервера"));
+            emit errorSignal();
+            break;
+        }
+    }
+    currentState=SERVERCOMMAND_NO_COMMAND;
+}
 ////////////////////////////////////////////////////////////////////////
 void tcpClient::connectSlot(){
 
@@ -323,9 +344,9 @@ void tcpClient::readyReadSlot(){
     qint64 packetSize=0;
     incomingBuffer.append(socket->readAll());
     QDataStream str(incomingBuffer);
-
+    int incomingSize=incomingBuffer.size();
     str>>packetSize;
-    if(packetSize==incomingBuffer.size()){
+    if(packetSize==incomingSize){
         switch(currentState){
             case(SERVERCOMMAND_GET_STATISTIC):{//если ждем статистику от сервера
                 decodeStatistic(&str);
@@ -333,51 +354,21 @@ void tcpClient::readyReadSlot(){
                 break;
             }
             case(SERVERCOMMAND_EDIT_OBJECT):{
-                uchar type;
-                str>>type;
-                switch(type){
-                    case(TCP_PACKET_ANSWER):{
-                        decodeAnswer(&str);
-                        break;
-                    }
-                    case(TCP_PACKET_ERROR):{
-                        decodeError(&str);
-                        break;
-                    }
-                    default:{
-                        setLastError(tr("Неверный формат пакета от сервера"));
-                        emit errorSignal();
-                        break;
-                    }
-                }
-                currentState=SERVERCOMMAND_NO_COMMAND;
+                decErrorOrAnswer(&str);
                 break;
             }
             case(SERVERCOMMAND_CREATE_OBJECT):{
-                uchar type;
-                str>>type;
-                switch(type){
-                    case(TCP_PACKET_ANSWER):{
-                        decodeAnswer(&str);
-                        break;
-                    }
-                    case(TCP_PACKET_ERROR):{
-                        decodeError(&str);
-                        break;
-                    }
-                    default:{
-                        setLastError(tr("Неверный формат пакета от сервера"));
-                        emit errorSignal();
-                        break;
-                    }
-                }
-                currentState=SERVERCOMMAND_NO_COMMAND;
+                decErrorOrAnswer(&str);
+                break;
+            }
+            case(SERVERCOMMAND_DELETE_OBJECT):{
+                decErrorOrAnswer(&str);
                 break;
             }
         }
         incomingBuffer.clear();
     }
-    else if(packetSize<incomingBuffer.size()){
+    else if(packetSize<incomingSize){
         setLastError(tr("Неверный формат пакета от сервера"));
         emit errorSignal();
         incomingBuffer.clear();
