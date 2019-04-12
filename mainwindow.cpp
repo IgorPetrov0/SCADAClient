@@ -86,6 +86,7 @@ void MainWindow::editObjectSlot(objectType type, int index){
 }
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::deleteObjectSlot(objectType type, int index){
+    updateTimer->stop();//останавливаем обновления т.к. адреса объектов при обновлении смещаются
     object *tmp=NULL;
     switch(type){
         case(objectMashine):{
@@ -118,6 +119,7 @@ void MainWindow::deleteObjectSlot(objectType type, int index){
     else{
         qDebug("MainWindow::deleteObjectSlot : Object is NULL");
     }
+    updateTimer->start(updateTime);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void MainWindow::openGraphSlot(int index){
