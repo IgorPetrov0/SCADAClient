@@ -19,7 +19,7 @@ tcpClient::~tcpClient(){
 mashine *tcpClient::getMashine(int index){
     if((index>=mashinesArray.size())||(index<0)){
         qDebug("netCore::getMashine : index out of range");
-        return NULL;
+        return nullptr;
     }
     return mashinesArray.at(index);
 }
@@ -134,7 +134,7 @@ bool tcpClient::isNameExist(QString name, object *ob){
 /////////////////////////////////////////////////////////////////////////////////////////////
 object *tcpClient::getObjectForAddress(int address, object *ob){
     int size=mashinesArray.size();
-    object *tmp=NULL;
+    object *tmp=nullptr;
     for(int n=0;n!=size;n++){
         tmp=mashinesArray.at(n);
         if(tmp!=ob){//не проверяем указанный объект. Во первых нет смысла, во вторых для возможности редактировать
@@ -143,7 +143,20 @@ object *tcpClient::getObjectForAddress(int address, object *ob){
             }
         }
     }
-    return NULL;
+    return nullptr;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////
+object *tcpClient::getObjectForName(QString name){
+    int size=mashinesArray.size();//проверяем по массиву машин
+    for(int n=0;n!=size;n++){
+        object *tmp=mashinesArray.at(n);
+        if(mashinesArray.at(n)->getName()==name){
+            return tmp;
+        }
+    }
+    //todo проверяем по остальным массивам объектов
+
+    return nullptr;
 }
 ////////////////////////////////////////////////////////////////////////
 int tcpClient::getMashinsCount(){
@@ -264,7 +277,11 @@ void tcpClient::decodeStatistic(QDataStream *str){
             *str>>size;
             for(int n=0;n!=size;n++){
                 mashine *tmpMashine = new mashine;
-                tmpMashine->netDeserialise(str);
+                if(!tmpMashine->netDeserialise(str)){
+                    setLastError(tr("Неверный формат пакета от сервера"));
+                    emit errorSignal();
+                    break;
+                }
                 tmpVector.append(tmpMashine);
             }
             //ищем и переписываем одноименные машины т.к. порядок машин у клиента и сервера может отличаться

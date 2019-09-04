@@ -14,7 +14,7 @@ class tcpClient : public QObject, public errorProcessor
     Q_OBJECT
 
 public:
-    tcpClient(QObject *parent=0);
+    tcpClient(QObject *parent=nullptr);
     ~tcpClient();
     mashine *getMashine(int index);
     bool createObject(QByteArray array);
@@ -24,8 +24,9 @@ public:
     //строит отчет по заданным датам
     reportClass *createReport(reportType type, QDate startDate, QDate stopDate, int mashineIndex);//за удаление отчета отвечает вызывающий
     bool readConfiguration(QString workingDir);
-    bool isNameExist(QString name,object *ob=NULL);//если ob задан, то проверяется все, кроме данного объекта
-    object *getObjectForAddress(int address, object *ob=NULL);
+    bool isNameExist(QString name,object *ob=nullptr);//если ob задан, то проверяется все, кроме данного объекта
+    object *getObjectForAddress(int address, object *ob=nullptr);
+    object *getObjectForName(QString name);
     int getMashinsCount();
     //перемещение машины в списке
     bool mashineUp(int index);

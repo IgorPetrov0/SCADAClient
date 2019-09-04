@@ -27,6 +27,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    logic/condition.cpp \
+    logic/objectport.cpp \
         main.cpp \
         mainwindow.cpp \
     clientsocket.cpp \
@@ -57,6 +59,8 @@ SOURCES += \
     widgets/graphviewwidget.cpp
 
 HEADERS += \
+    logic/condition.h \
+    logic/objectport.h \
         mainwindow.h \
     clientsocket.h \
     defines.h \
